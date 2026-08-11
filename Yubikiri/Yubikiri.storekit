@@ -1,0 +1,29 @@
+{
+  "identifier" : "yubikiri-storekit",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "1800",
+      "familyShareable" : false,
+      "internalID" : "anchoring_lifetime",
+      "localizations" : [
+        {
+          "description" : "OpenTimestampsによる外部アンカリング（ブロックチェーン刻印）を無制限に利用できます",
+          "displayName" : "外部アンカリング解放（買い切り）",
+          "locale" : "ja"
+        }
+      ],
+      "productID" : "com.gourcuff.yubikiri.anchoring.lifetime",
+      "referenceName" : "外部アンカリング解放",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_locale" : "ja_JP"
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

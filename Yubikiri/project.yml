@@ -23,6 +23,7 @@ targets:
       properties:
         CFBundleDisplayName: ゆびきり
         UILaunchScreen: {}
+        NSPhotoLibraryUsageDescription: 納品物のスクリーンショットなどを記録に添付するために使用します
   YubikiriTests:
     type: bundle.unit-test
     platform: iOS
@@ -43,5 +44,7 @@ schemes:
     test:
       targets:
         - YubikiriTests
+      storeKitConfiguration: Yubikiri.storekit
     run:
       config: Debug
+      storeKitConfiguration: Yubikiri.storekit

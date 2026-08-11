@@ -14,6 +14,11 @@ final class Entry {
     var otsProofData: Data?
     var anchoredAt: Date?
 
+    /// 納品物のスクリーンショット等（任意）。画像バイト列自体がハッシュ対象。
+    @Attribute(.externalStorage)
+    var attachmentData: Data?
+    var attachmentHash: String?
+
     var parentCase: Case?
 
     init(
@@ -21,13 +26,17 @@ final class Entry {
         amount: Decimal? = nil,
         dueDate: Date? = nil,
         createdAt: Date = .now,
-        contentHash: String
+        contentHash: String,
+        attachmentData: Data? = nil,
+        attachmentHash: String? = nil
     ) {
         self.body = body
         self.amount = amount
         self.dueDate = dueDate
         self.createdAt = createdAt
         self.contentHash = contentHash
+        self.attachmentData = attachmentData
+        self.attachmentHash = attachmentHash
     }
 
     var isAnchored: Bool { otsProofData != nil }

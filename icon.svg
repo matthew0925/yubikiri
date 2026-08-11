@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBF6EE"/>
+      <stop offset="100%" stop-color="#F0E6D3"/>
+    </linearGradient>
+    <linearGradient id="fingerL" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4A3B30"/>
+      <stop offset="100%" stop-color="#3A2E27"/>
+    </linearGradient>
+    <linearGradient id="fingerR" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#5A493B"/>
+      <stop offset="100%" stop-color="#4A3B30"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
+
+  <!-- 2本の小指が鉤状に絡み合う「指切り」の瞬間を、抽象化したフック2つで表現 -->
+  <g filter="url(#soft)">
+    <!-- 左手の小指：左下から中央へ、鉤形に -->
+    <path d="M 245 300
+             C 245 250, 285 215, 335 215
+             C 385 215, 425 250, 425 300
+             L 425 560
+             C 425 660, 500 720, 590 705
+             C 650 695, 690 650, 690 590"
+          fill="none" stroke="url(#fingerL)" stroke-width="118" stroke-linecap="round"/>
+
+    <!-- 右手の小指：右下から中央へ、逆向きの鉤形で絡む -->
+    <path d="M 779 724
+             C 779 774, 739 809, 689 809
+             C 639 809, 599 774, 599 724
+             L 599 464
+             C 599 364, 524 304, 434 319
+             C 374 329, 334 374, 334 434"
+          fill="none" stroke="url(#fingerR)" stroke-width="118" stroke-linecap="round"/>
+  </g>
+
+  <!-- 結び目：2本が交わる中心に、赤い糸の輪 -->
+  <circle cx="512" cy="512" r="54" fill="none" stroke="#C8422D" stroke-width="16"/>
+  <circle cx="512" cy="512" r="10" fill="#C8422D"/>
+</svg>

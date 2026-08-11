@@ -5,6 +5,8 @@ struct CaseListView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Case.createdAt, order: .reverse) private var cases: [Case]
     @State private var isPresentingNewCase = false
+    @State private var exportURL: URL?
+    @State private var exportError: String?
 
     var body: some View {
         NavigationStack {
@@ -36,10 +38,42 @@ struct CaseListView: View {
                         Label("案件を追加", systemImage: "plus")
                     }
                 }
+                ToolbarItem(placement: .secondaryAction) {
+                    Button {
+                        exportBackup()
+                    } label: {
+                        Label("バックアップをエクスポート", systemImage: "square.and.arrow.up")
+                    }
+                    .disabled(cases.isEmpty)
+                }
             }
             .sheet(isPresented: $isPresentingNewCase) {
                 NewCaseView()
             }
+            .sheet(isPresented: Binding(
+                get: { exportURL != nil },
+                set: { if !$0 { exportURL = nil } }
+            )) {
+                if let exportURL {
+                    ShareSheet(items: [exportURL])
+                }
+            }
+            .alert("エクスポートに失敗しました", isPresented: .constant(exportError != nil), actions: {
+                Button("OK") { exportError = nil }
+            }, message: {
+                Text(exportError ?? "")
+            })
+        }
+    }
+
+    private func exportBackup() {
+        do {
+            let now = Date()
+            let bundle = ExportService.makeBundle(cases: cases, exportedAt: now)
+            let data = try ExportService.encodeJSON(bundle)
+            exportURL = try ExportService.writeToTemporaryFile(data, exportedAt: now)
+        } catch {
+            exportError = "ファイルの書き出しに失敗しました。"
         }
     }
 

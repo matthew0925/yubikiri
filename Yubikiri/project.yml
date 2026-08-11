@@ -1,0 +1,47 @@
+name: Yubikiri
+options:
+  bundleIdPrefix: com.gourcuff.yubikiri
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  MARKETING_VERSION: "0.1.0"
+  CURRENT_PROJECT_VERSION: "1"
+targets:
+  Yubikiri:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/Yubikiri
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gourcuff.yubikiri
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        SWIFT_VERSION: "5.0"
+    info:
+      path: Sources/Yubikiri/App/Info.plist
+      properties:
+        CFBundleDisplayName: ゆびきり
+        UILaunchScreen: {}
+  YubikiriTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/YubikiriTests
+    dependencies:
+      - target: Yubikiri
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Yubikiri:
+    build:
+      targets:
+        Yubikiri: all
+        YubikiriTests: [test]
+    test:
+      targets:
+        - YubikiriTests
+    run:
+      config: Debug

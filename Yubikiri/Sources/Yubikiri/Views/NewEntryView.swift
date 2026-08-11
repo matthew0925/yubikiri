@@ -15,33 +15,40 @@ struct NewEntryView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("内容") {
-                    TextEditor(text: $text).frame(minHeight: 120)
-                }
-                Section("条件（任意）") {
-                    TextField("金額", text: $amountText)
-                        .keyboardType(.decimalPad)
-                    Toggle("納期を指定", isOn: $includeDueDate)
-                    if includeDueDate {
-                        DatePicker("納期", selection: $dueDate, displayedComponents: .date)
+            ZStack {
+                BrandPalette.backgroundGradient.ignoresSafeArea()
+                Form {
+                    Section("内容") {
+                        TextEditor(text: $text).frame(minHeight: 120)
                     }
-                }
-                Section("納品物のスクリーンショット（任意）") {
-                    PhotosPicker(selection: $pickedItem, matching: .images) {
-                        Label(attachmentData == nil ? "画像を選択" : "画像を変更", systemImage: "photo")
-                    }
-                    if let attachmentData, let uiImage = UIImage(data: attachmentData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 160)
-                        Button("画像を削除", role: .destructive) {
-                            self.attachmentData = nil
-                            pickedItem = nil
+                    .listRowBackground(Color.white.opacity(0.7))
+                    Section("条件（任意）") {
+                        TextField("金額", text: $amountText)
+                            .keyboardType(.decimalPad)
+                        Toggle("納期を指定", isOn: $includeDueDate)
+                        if includeDueDate {
+                            DatePicker("納期", selection: $dueDate, displayedComponents: .date)
                         }
                     }
+                    .listRowBackground(Color.white.opacity(0.7))
+                    Section("納品物のスクリーンショット（任意）") {
+                        PhotosPicker(selection: $pickedItem, matching: .images) {
+                            Label(attachmentData == nil ? "画像を選択" : "画像を変更", systemImage: "photo")
+                        }
+                        if let attachmentData, let uiImage = UIImage(data: attachmentData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxHeight: 160)
+                            Button("画像を削除", role: .destructive) {
+                                self.attachmentData = nil
+                                pickedItem = nil
+                            }
+                        }
+                    }
+                    .listRowBackground(Color.white.opacity(0.7))
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("記録を確定")
             .toolbar {

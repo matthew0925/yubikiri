@@ -6,63 +6,89 @@ struct OnboardingView: View {
 
     private let steps: [(icon: String, title: String, body: String)] = [
         (
-            "text.book.closed",
-            "口約束を、その場で記録",
-            "受注条件や納品のやり取りを、案件ごとにテキストで残します。難しい入力は不要、メモ感覚で使えます。"
+            "text.bubble",
+            "「言った・言わない」を、なくす",
+            "受けた条件や納品のやり取りを、その場でサッと記録。あとから見返せる形で残しておけます。"
+        ),
+        (
+            "lock.shield",
+            "記録した瞬間から、書き換え不可に",
+            "確定した記録は自動で改ざん防止処理がかかります。難しい設定は一切不要です。"
         ),
         (
             "checkmark.seal",
-            "記録した瞬間にハッシュ化",
-            "確定した記録はSHA-256で自動的にハッシュ値が計算され、端末内に保存されます。ここまでは無料です。"
-        ),
-        (
-            "link.badge.plus",
-            "必要なときだけ外部に刻印",
-            "「言った／言わない」が起きそうな記録だけ、有料でOpenTimestamps経由のブロックチェーン刻印を追加できます。"
+            "ここぞという時は、外部にも刻印",
+            "揉めそうな案件だけ、有料で外部の公開記録に刻印。「この時刻に存在した」と第三者にも示せます。"
         ),
     ]
 
     var body: some View {
-        VStack(spacing: 24) {
-            TabView(selection: $page) {
-                ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
-                    VStack(spacing: 20) {
-                        Image(systemName: step.icon)
-                            .font(.system(size: 56))
-                            .foregroundStyle(.tint)
-                        Text(step.title)
-                            .font(.title2.bold())
-                            .multilineTextAlignment(.center)
-                        Text(step.body)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
+        ZStack {
+            BrandPalette.backgroundGradient
+                .ignoresSafeArea()
+
+            VStack(spacing: 28) {
+                Spacer(minLength: 12)
+
+                TabView(selection: $page) {
+                    ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                        VStack(spacing: 24) {
+                            ZStack {
+                                Circle()
+                                    .fill(BrandPalette.thread.opacity(0.12))
+                                    .frame(width: 132, height: 132)
+                                Image(systemName: step.icon)
+                                    .font(.system(size: 46, weight: .medium))
+                                    .foregroundStyle(BrandPalette.thread)
+                            }
+                            Text(step.title)
+                                .font(.system(.title, design: .rounded, weight: .bold))
+                                .foregroundStyle(BrandPalette.ink)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Text(step.body)
+                                .font(.body)
+                                .foregroundStyle(BrandPalette.ink.opacity(0.65))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 36)
+                        }
+                        .tag(index)
                     }
-                    .tag(index)
                 }
-            }
-            .tabViewStyle(.page)
+                .tabViewStyle(.page(indexDisplayMode: .never))
 
-            Text("法的な助言は行いません。あくまで「交渉・トラブル予防のための記録」を目的としたツールです。")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                HStack(spacing: 8) {
+                    ForEach(steps.indices, id: \.self) { index in
+                        Capsule()
+                            .fill(index == page ? BrandPalette.thread : BrandPalette.thread.opacity(0.2))
+                            .frame(width: index == page ? 22 : 8, height: 8)
+                            .animation(.spring(duration: 0.3), value: page)
+                    }
+                }
+
+                Text("法的な助言は行いません。トラブルを未然に防ぐための記録ツールです。")
+                    .font(.caption)
+                    .foregroundStyle(BrandPalette.ink.opacity(0.5))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+
+                Button {
+                    if page < steps.count - 1 {
+                        withAnimation { page += 1 }
+                    } else {
+                        dismiss()
+                    }
+                } label: {
+                    Text(page < steps.count - 1 ? "次へ" : "はじめる")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 4)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(BrandPalette.thread)
                 .padding(.horizontal, 32)
-
-            Button {
-                if page < steps.count - 1 {
-                    page += 1
-                } else {
-                    dismiss()
-                }
-            } label: {
-                Text(page < steps.count - 1 ? "次へ" : "はじめる")
-                    .frame(maxWidth: .infinity)
+                .padding(.bottom, 20)
             }
-            .buttonStyle(.borderedProminent)
-            .padding(.horizontal, 32)
-            .padding(.bottom, 16)
         }
-        .interactiveDismissDisabled(false)
     }
 }

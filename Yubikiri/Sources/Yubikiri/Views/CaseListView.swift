@@ -11,23 +11,20 @@ struct CaseListView: View {
 
     var body: some View {
         NavigationStack {
-            List {
+            Group {
                 if cases.isEmpty {
-                    ContentUnavailableView(
-                        "案件がありません",
-                        systemImage: "doc.text",
-                        description: Text("右上の＋から最初の案件を作成しましょう")
-                    )
-                }
-                ForEach(cases) { item in
-                    NavigationLink(value: item) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(item.title).font(.headline)
-                            Text(item.clientName).font(.subheadline).foregroundStyle(.secondary)
+                    emptyState
+                } else {
+                    List {
+                        ForEach(cases) { item in
+                            NavigationLink(value: item) {
+                                CaseRow(caseItem: item)
+                            }
                         }
+                        .onDelete(perform: deleteCases)
                     }
+                    .listStyle(.plain)
                 }
-                .onDelete(perform: deleteCases)
             }
             .navigationTitle("ゆびきり")
             .navigationDestination(for: Case.self) { CaseDetailView(caseItem: $0) }
@@ -88,5 +85,72 @@ struct CaseListView: View {
         for index in offsets {
             context.delete(cases[index])
         }
+    }
+
+    private var emptyState: some View {
+        ZStack {
+            BrandPalette.backgroundGradient.ignoresSafeArea()
+            VStack(spacing: 20) {
+                ZStack {
+                    Circle()
+                        .fill(BrandPalette.thread.opacity(0.12))
+                        .frame(width: 120, height: 120)
+                    Image(systemName: "text.bubble")
+                        .font(.system(size: 42, weight: .medium))
+                        .foregroundStyle(BrandPalette.thread)
+                }
+                VStack(spacing: 6) {
+                    Text("最初の約束を記録しよう")
+                        .font(.system(.title3, design: .rounded, weight: .bold))
+                        .foregroundStyle(BrandPalette.ink)
+                    Text("右上の＋から案件を作成できます")
+                        .font(.subheadline)
+                        .foregroundStyle(BrandPalette.ink.opacity(0.6))
+                }
+                Button {
+                    isPresentingNewCase = true
+                } label: {
+                    Label("案件を作成", systemImage: "plus")
+                        .font(.headline)
+                        .padding(.horizontal, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(BrandPalette.thread)
+            }
+        }
+    }
+}
+
+private struct CaseRow: View {
+    let caseItem: Case
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(BrandPalette.thread.opacity(0.12))
+                    .frame(width: 44, height: 44)
+                Text(String(caseItem.title.prefix(1)))
+                    .font(.system(.body, design: .rounded, weight: .bold))
+                    .foregroundStyle(BrandPalette.thread)
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text(caseItem.title)
+                    .font(.system(.body, design: .rounded, weight: .semibold))
+                Text(caseItem.clientName)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            if !caseItem.entries.isEmpty {
+                Text("\(caseItem.entries.count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(BrandPalette.thread)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(BrandPalette.thread.opacity(0.12), in: Capsule())
+            }
+        }
+        .padding(.vertical, 6)
     }
 }

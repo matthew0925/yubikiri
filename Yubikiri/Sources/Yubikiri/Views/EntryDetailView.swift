@@ -13,6 +13,17 @@ struct EntryDetailView: View {
     private let anchoringService = AnchoringService()
 
     var body: some View {
+        ZStack {
+            BrandPalette.backgroundGradient.ignoresSafeArea()
+            listContent
+        }
+        .navigationTitle("記録の詳細")
+        .sheet(isPresented: $isPresentingPaywall) {
+            PaywallView()
+        }
+    }
+
+    private var listContent: some View {
         List {
             Section("内容") {
                 Text(entry.body)
@@ -49,7 +60,7 @@ struct EntryDetailView: View {
                 if entry.isAnchored {
                     if entry.isConfirmedOnChain {
                         Label("ブロックチェーンへの刻印を確認済み", systemImage: "checkmark.seal.fill")
-                            .foregroundStyle(.green)
+                            .foregroundStyle(BrandPalette.thread)
                     } else {
                         Label("提出済み（ブロックチェーンへの刻印は未確定）", systemImage: "clock.badge.checkmark")
                             .foregroundStyle(.orange)
@@ -103,10 +114,7 @@ struct EntryDetailView: View {
                 }
             }
         }
-        .navigationTitle("記録の詳細")
-        .sheet(isPresented: $isPresentingPaywall) {
-            PaywallView()
-        }
+        .scrollContentBackground(.hidden)
     }
 
     private func startAnchoring() async {

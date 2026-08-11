@@ -9,40 +9,52 @@ struct PaywallView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.green)
-                Text("外部アンカリングを解放")
-                    .font(.title2.bold())
-                Text("記録のハッシュ値をOpenTimestamps経由でビットコインブロックチェーンに刻印し、「この時刻に存在した」ことを外部から確認できるようにします。法的な有効性を保証するものではありませんが、交渉やトラブル予防のための記録として役立ちます。買い切りで、以降すべての記録に無制限に使えます。")
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal)
-
-                if let product = purchaseManager.products.first {
-                    Button {
-                        Task { await purchase() }
-                    } label: {
-                        if isPurchasing {
-                            ProgressView()
-                        } else {
-                            Text("\(product.displayName) — \(product.displayPrice)")
-                                .frame(maxWidth: .infinity)
-                        }
+            ZStack {
+                BrandPalette.backgroundGradient.ignoresSafeArea()
+                VStack(spacing: 20) {
+                    ZStack {
+                        Circle()
+                            .fill(BrandPalette.thread.opacity(0.12))
+                            .frame(width: 100, height: 100)
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(BrandPalette.thread)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(isPurchasing)
-                    .padding(.horizontal)
-                } else {
-                    ProgressView("読み込み中…")
-                }
+                    Text("外部アンカリングを解放")
+                        .font(.system(.title2, design: .rounded, weight: .bold))
+                        .foregroundStyle(BrandPalette.ink)
+                    Text("記録のハッシュ値をOpenTimestamps経由でビットコインブロックチェーンに刻印し、「この時刻に存在した」ことを外部から確認できるようにします。法的な有効性を保証するものではありませんが、交渉やトラブル予防のための記録として役立ちます。買い切りで、以降すべての記録に無制限に使えます。")
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(BrandPalette.ink.opacity(0.65))
+                        .padding(.horizontal)
 
-                if let errorMessage {
-                    Text(errorMessage).font(.caption).foregroundStyle(.red)
+                    if let product = purchaseManager.products.first {
+                        Button {
+                            Task { await purchase() }
+                        } label: {
+                            if isPurchasing {
+                                ProgressView()
+                            } else {
+                                Text("\(product.displayName) — \(product.displayPrice)")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 4)
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(BrandPalette.thread)
+                        .disabled(isPurchasing)
+                        .padding(.horizontal)
+                    } else {
+                        ProgressView("読み込み中…")
+                    }
+
+                    if let errorMessage {
+                        Text(errorMessage).font(.caption).foregroundStyle(.red)
+                    }
                 }
+                .padding()
             }
-            .padding()
             .navigationTitle("有料版")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -15,7 +15,7 @@ struct PaywallView: View {
                     .foregroundStyle(.green)
                 Text("外部アンカリングを解放")
                     .font(.title2.bold())
-                Text("記録のハッシュ値をOpenTimestamps経由でビットコインブロックチェーンに刻印し、第三者証明力を付与します。買い切りで、以降すべての記録に無制限に使えます。")
+                Text("記録のハッシュ値をOpenTimestamps経由でビットコインブロックチェーンに刻印し、「この時刻に存在した」ことを外部から確認できるようにします。法的な有効性を保証するものではありませんが、交渉やトラブル予防のための記録として役立ちます。買い切りで、以降すべての記録に無制限に使えます。")
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)

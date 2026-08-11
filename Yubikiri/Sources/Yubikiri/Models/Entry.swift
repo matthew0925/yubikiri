@@ -13,6 +13,9 @@ final class Entry {
     /// 有料版でOpenTimestampsに刻印した際の .ots 証明ファイル（未刻印はnil）
     var otsProofData: Data?
     var anchoredAt: Date?
+    /// ブロックチェーン上での刻印確定を最後に確認できた日時（未確認・未確定はnil）
+    var lastConfirmedCheckAt: Date?
+    var isConfirmedOnChain: Bool = false
 
     /// 納品物のスクリーンショット等（任意）。画像バイト列自体がハッシュ対象。
     @Attribute(.externalStorage)

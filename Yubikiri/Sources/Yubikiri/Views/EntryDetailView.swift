@@ -7,6 +7,8 @@ struct EntryDetailView: View {
     @State private var isAnchoring = false
     @State private var isPresentingPaywall = false
     @State private var anchoringError: String?
+    @State private var isVerifying = false
+    @State private var verificationError: String?
 
     private let anchoringService = AnchoringService()
 
@@ -45,10 +47,40 @@ struct EntryDetailView: View {
                         .textSelection(.enabled)
                 }
                 if entry.isAnchored {
-                    Label("ブロックチェーンに提出済み", systemImage: "checkmark.seal.fill")
-                        .foregroundStyle(.green)
+                    if entry.isConfirmedOnChain {
+                        Label("ブロックチェーンへの刻印を確認済み", systemImage: "checkmark.seal.fill")
+                            .foregroundStyle(.green)
+                    } else {
+                        Label("提出済み（ブロックチェーンへの刻印は未確定）", systemImage: "clock.badge.checkmark")
+                            .foregroundStyle(.orange)
+                        Text("カレンダーサーバーが実際にビットコインへ刻むまで数時間〜要することがあります。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     if let anchoredAt = entry.anchoredAt {
                         LabeledContent("提出日時", value: anchoredAt.formatted(date: .abbreviated, time: .shortened))
+                    }
+                    if !entry.isConfirmedOnChain {
+                        Button {
+                            Task { await checkConfirmation() }
+                        } label: {
+                            if isVerifying {
+                                ProgressView()
+                            } else {
+                                Text("刻印状況を確認する")
+                            }
+                        }
+                        .disabled(isVerifying)
+                        if let lastConfirmedCheckAt = entry.lastConfirmedCheckAt {
+                            Text("最終確認：\(lastConfirmedCheckAt.formatted(date: .abbreviated, time: .shortened))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        if let verificationError {
+                            Text(verificationError)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
                     }
                 } else {
                     Label("端末内保存のみ（未刻印）", systemImage: "checkmark.seal")
@@ -89,6 +121,19 @@ struct EntryDetailView: View {
             try await anchoringService.anchor(entry)
         } catch {
             anchoringError = "刻印の提出に失敗しました。通信環境を確認して再度お試しください。"
+        }
+    }
+
+    private func checkConfirmation() async {
+        isVerifying = true
+        verificationError = nil
+        defer { isVerifying = false }
+        do {
+            let result = try await anchoringService.refreshVerification(entry)
+            entry.lastConfirmedCheckAt = .now
+            entry.isConfirmedOnChain = result.isValid
+        } catch {
+            verificationError = "確認に失敗しました。通信環境を確認して再度お試しください。"
         }
     }
 }

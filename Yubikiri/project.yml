@@ -17,6 +17,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.gourcuff.yubikiri
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_VERSION: "5.0"
     info:
       path: Sources/Yubikiri/App/Info.plist

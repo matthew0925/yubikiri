@@ -7,6 +7,7 @@ struct CaseListView: View {
     @State private var isPresentingNewCase = false
     @State private var exportURL: URL?
     @State private var exportError: String?
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
         NavigationStack {
@@ -63,6 +64,12 @@ struct CaseListView: View {
             }, message: {
                 Text(exportError ?? "")
             })
+            .fullScreenCover(isPresented: Binding(
+                get: { !hasCompletedOnboarding },
+                set: { isPresented in if !isPresented { hasCompletedOnboarding = true } }
+            )) {
+                OnboardingView()
+            }
         }
     }
 

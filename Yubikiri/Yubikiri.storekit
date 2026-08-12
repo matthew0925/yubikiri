@@ -8,13 +8,13 @@
       "internalID" : "anchoring_lifetime",
       "localizations" : [
         {
-          "description" : "OpenTimestampsによる外部アンカリング（ブロックチェーン刻印）を無制限に利用できます",
-          "displayName" : "外部アンカリング解放（買い切り）",
+          "description" : "外部アンカリング（ブロックチェーン刻印）とバックアップのJSONエクスポートを無制限に利用できます",
+          "displayName" : "有料機能解放（買い切り）",
           "locale" : "ja"
         }
       ],
       "productID" : "com.gourcuff.yubikiri.anchoring.lifetime",
-      "referenceName" : "外部アンカリング解放",
+      "referenceName" : "有料機能解放",
       "type" : "NonConsumable"
     }
   ],

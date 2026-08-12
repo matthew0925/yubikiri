@@ -3,10 +3,12 @@ import SwiftData
 
 struct CaseListView: View {
     @Environment(\.modelContext) private var context
+    @Environment(PurchaseManager.self) private var purchaseManager
     @Query(sort: \Case.createdAt, order: .reverse) private var cases: [Case]
     @State private var isPresentingNewCase = false
     @State private var exportURL: URL?
     @State private var exportError: String?
+    @State private var isPresentingExportPaywall = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
@@ -38,9 +40,13 @@ struct CaseListView: View {
                 }
                 ToolbarItem(placement: .secondaryAction) {
                     Button {
-                        exportBackup()
+                        if purchaseManager.isPremiumUnlocked {
+                            exportBackup()
+                        } else {
+                            isPresentingExportPaywall = true
+                        }
                     } label: {
-                        Label("バックアップをエクスポート", systemImage: "square.and.arrow.up")
+                        Label("バックアップをエクスポート（有料）", systemImage: "square.and.arrow.up")
                     }
                     .disabled(cases.isEmpty)
                 }
@@ -61,6 +67,9 @@ struct CaseListView: View {
             }, message: {
                 Text(exportError ?? "")
             })
+            .sheet(isPresented: $isPresentingExportPaywall) {
+                PaywallView()
+            }
             .fullScreenCover(isPresented: Binding(
                 get: { !hasCompletedOnboarding },
                 set: { isPresented in if !isPresented { hasCompletedOnboarding = true } }

@@ -1,14 +1,14 @@
 import Foundation
 import StoreKit
 
-/// 買い切り課金（非消費型）でOpenTimestampsアンカリング機能を解放する。
+/// 買い切り課金（非消費型）で有料機能（外部アンカリング・バックアップエクスポート）を解放する。
 @MainActor
 @Observable
 final class PurchaseManager {
     static let anchoringProductID = "com.gourcuff.yubikiri.anchoring.lifetime"
 
     private(set) var products: [Product] = []
-    private(set) var isAnchoringUnlocked = false
+    private(set) var isPremiumUnlocked = false
     private var updatesTask: Task<Void, Never>?
 
     init() {
@@ -30,7 +30,7 @@ final class PurchaseManager {
         }
     }
 
-    func purchaseAnchoring() async throws {
+    func purchasePremium() async throws {
         guard let product = products.first(where: { $0.id == Self.anchoringProductID }) else {
             throw PurchaseError.productUnavailable
         }
@@ -55,7 +55,7 @@ final class PurchaseManager {
                 unlocked = true
             }
         }
-        isAnchoringUnlocked = unlocked
+        isPremiumUnlocked = unlocked
     }
 
     private func observeTransactionUpdates() async {

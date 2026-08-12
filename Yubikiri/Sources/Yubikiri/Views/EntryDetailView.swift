@@ -118,7 +118,7 @@ struct EntryDetailView: View {
     }
 
     private func startAnchoring() async {
-        guard purchaseManager.isAnchoringUnlocked else {
+        guard purchaseManager.isPremiumUnlocked else {
             isPresentingPaywall = true
             return
         }

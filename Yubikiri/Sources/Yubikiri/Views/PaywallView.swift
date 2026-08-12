@@ -30,6 +30,11 @@ struct PaywallView: View {
                             detail: "記録のハッシュ値をブロックチェーンに刻印し、「この時刻に存在した」ことを外部から確認できるようにします。法的な有効性を保証するものではありません。"
                         )
                         FeatureRow(
+                            icon: "doc.richtext",
+                            title: "証跡PDFレポート",
+                            detail: "案件の記録・ハッシュ値・検証状況を、クライアントや相談時にそのまま見せられるPDFに整形します。"
+                        )
+                        FeatureRow(
                             icon: "square.and.arrow.up",
                             title: "バックアップのエクスポート",
                             detail: "案件・記録の内容をJSONファイルとして書き出し、Files・AirDrop等に保存できます。"

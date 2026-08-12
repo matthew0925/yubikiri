@@ -8,7 +8,7 @@
       "internalID" : "anchoring_lifetime",
       "localizations" : [
         {
-          "description" : "外部アンカリング（ブロックチェーン刻印）とバックアップのJSONエクスポートを無制限に利用できます",
+          "description" : "外部アンカリング（ブロックチェーン刻印）・証跡PDFレポート・バックアップのJSONエクスポートを無制限に利用できます",
           "displayName" : "有料機能解放（買い切り）",
           "locale" : "ja"
         }

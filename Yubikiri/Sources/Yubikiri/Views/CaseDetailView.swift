@@ -2,7 +2,11 @@ import SwiftUI
 
 struct CaseDetailView: View {
     @Bindable var caseItem: Case
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var isPresentingNewEntry = false
+    @State private var isPresentingPaywall = false
+    @State private var pdfURL: URL?
+    @State private var pdfError: String?
 
     private var sortedEntries: [Entry] {
         caseItem.entries.sorted { $0.createdAt > $1.createdAt }
@@ -33,9 +37,47 @@ struct CaseDetailView: View {
                     Label("記録を追加", systemImage: "plus")
                 }
             }
+            ToolbarItem(placement: .secondaryAction) {
+                Button {
+                    exportPDF()
+                } label: {
+                    Label("証跡PDFを書き出す（有料）", systemImage: "doc.richtext")
+                }
+                .disabled(sortedEntries.isEmpty)
+            }
         }
         .sheet(isPresented: $isPresentingNewEntry) {
             NewEntryView(caseItem: caseItem)
+        }
+        .sheet(isPresented: $isPresentingPaywall) {
+            PaywallView()
+        }
+        .sheet(isPresented: Binding(
+            get: { pdfURL != nil },
+            set: { if !$0 { pdfURL = nil } }
+        )) {
+            if let pdfURL {
+                ShareSheet(items: [pdfURL])
+            }
+        }
+        .alert("PDFの書き出しに失敗しました", isPresented: .constant(pdfError != nil), actions: {
+            Button("OK") { pdfError = nil }
+        }, message: {
+            Text(pdfError ?? "")
+        })
+    }
+
+    private func exportPDF() {
+        guard purchaseManager.isPremiumUnlocked else {
+            isPresentingPaywall = true
+            return
+        }
+        let now = Date()
+        let data = PDFReportService.makeReport(for: caseItem, generatedAt: now)
+        do {
+            pdfURL = try PDFReportService.writeToTemporaryFile(data, caseTitle: caseItem.title, generatedAt: now)
+        } catch {
+            pdfError = "ファイルの書き出しに失敗しました。"
         }
     }
 

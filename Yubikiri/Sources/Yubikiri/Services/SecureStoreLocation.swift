@@ -10,6 +10,13 @@ enum SecureStoreLocation {
         return appSupport.appendingPathComponent(storeFileName)
     }
 
+    /// Application SupportディレクトリはiOSが自動生成しないため、
+    /// ModelContainer初期化前に必ず呼び、ストアファイル作成に失敗しないようにする。
+    static func ensureDirectoryExists() {
+        let directory = storeURL.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    }
+
     /// ストア作成後に呼び、ディレクトリとファイルへ完全保護属性を付与する。
     static func applyCompleteFileProtection() {
         let directory = storeURL.deletingLastPathComponent()

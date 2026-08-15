@@ -7,6 +7,7 @@ struct YubikiriApp: App {
     private let modelContainer: ModelContainer
 
     init() {
+        SecureStoreLocation.ensureDirectoryExists()
         let schema = Schema([Case.self, Entry.self])
         let configuration = ModelConfiguration(schema: schema, url: SecureStoreLocation.storeURL)
         do {

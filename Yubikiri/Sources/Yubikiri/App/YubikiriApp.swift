@@ -4,6 +4,8 @@ import SwiftData
 @main
 struct YubikiriApp: App {
     @State private var purchaseManager = PurchaseManager()
+    @State private var lockManager = AppLockManager()
+    @Environment(\.scenePhase) private var scenePhase
     private let modelContainer: ModelContainer
 
     init() {
@@ -20,9 +22,21 @@ struct YubikiriApp: App {
 
     var body: some Scene {
         WindowGroup {
-            CaseListView()
-                .environment(purchaseManager)
+            ZStack {
+                CaseListView()
+                if !lockManager.isUnlocked {
+                    LockScreenView()
+                        .transition(.opacity)
+                }
+            }
+            .environment(purchaseManager)
+            .environment(lockManager)
         }
         .modelContainer(modelContainer)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background {
+                lockManager.lockIfNeeded()
+            }
+        }
     }
 }

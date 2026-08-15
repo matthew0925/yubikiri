@@ -20,6 +20,8 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>記録を第三者に見られないよう、アプリロックの解除に使用します</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>納品物のスクリーンショットなどを記録に添付するために使用します</string>
 	<key>UILaunchScreen</key>

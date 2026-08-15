@@ -9,6 +9,7 @@ struct CaseListView: View {
     @State private var exportURL: URL?
     @State private var exportError: String?
     @State private var isPresentingExportPaywall = false
+    @State private var isPresentingSettings = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
@@ -50,6 +51,16 @@ struct CaseListView: View {
                     }
                     .disabled(cases.isEmpty)
                 }
+                ToolbarItem(placement: .secondaryAction) {
+                    Button {
+                        isPresentingSettings = true
+                    } label: {
+                        Label("設定", systemImage: "gearshape")
+                    }
+                }
+            }
+            .sheet(isPresented: $isPresentingSettings) {
+                SettingsView()
             }
             .sheet(isPresented: $isPresentingNewCase) {
                 NewCaseView()

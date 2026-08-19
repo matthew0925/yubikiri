@@ -3,11 +3,13 @@ import Foundation
 /// OpenTimestampsの公開カレンダーサーバーへハッシュを提出し、.ots証明を取得・検証するクライアント。
 /// v1では複数カレンダーサーバーへ冗長化して提出する想定（特定サービス依存を避けるため）。
 protocol OpenTimestampsClient {
-    /// ハッシュ値を公開カレンダーサーバーに提出し、.ots証明ファイルを取得する。
-    /// ブロックチェーンへの実刻印には数時間〜要するため、返るのは「提出済み」の未確定証明。
+    /// ハッシュ値を公開カレンダーサーバーに提出し、標準の.ots形式（DetachedTimestampFile）で
+    /// 証明を組み立てて返す。ブロックチェーンへの実刻印には数時間〜要するため、
+    /// 返るのは「提出済み」の未確定証明（pending attestation）。
     func submit(hashHex: String) async throws -> Data
 
-    /// 保存済みの.ots証明が、指定ハッシュに対して有効かを検証する。
+    /// 保存済みの.ots証明を検証する。各カレンダーへ`GET /timestamp/{hex}`で問い合わせ、
+    /// ビットコインへの刻印が確定していれば取り込んだ証明とともに結果を返す。
     func verify(hashHex: String, proof: Data) async throws -> TimestampVerification
 }
 
@@ -15,6 +17,8 @@ struct TimestampVerification {
     let isValid: Bool
     /// ブロックチェーン上で確認できた場合の刻印時刻（未確定の場合はnil）
     let confirmedAt: Date?
+    /// 確定情報を取り込んだ場合の更新後.otsデータ（変化がなければnil）
+    let upgradedProof: Data?
 }
 
 enum OpenTimestampsError: Error {
@@ -34,19 +38,17 @@ enum OpenTimestampsCalendars {
 
 /// OpenTimestampsカレンダーサーバーのHTTP APIを叩く実装。
 ///
-/// カレンダーサーバーAPIは `POST /digest`（body=32バイトのSHA-256生バイト列）に対し、
-/// 未確定タイムスタンプを表す独自バイナリ（pending attestation）を返す。
-/// 本実装は「そのカレンダーからの生レスポンスをそのまま証明として保存し、
-/// 複数カレンダーの結果を単純連結して1つのproofとする」簡易版であり、
-/// 公式クライアントが行う完全なMerkleツリー結合・.otsファイル形式のシリアライズは行わない。
-/// 検証時も、保存した生レスポンス群それぞれに対して `GET /timestamp/{hex}` を呼び直し、
-/// Bitcoin attestationタグ（0x0588960d73d71901）が含まれるかで確定判定する簡易実装。
+/// - 提出: `POST /digest`（body=32バイトのSHA-256生ダイジェスト）に対し、各カレンダーは
+///   そのダイジェストを起点とするTimestamp木（pending attestation付き）を返す。
+///   複数カレンダーの木を`OTSTimestamp.merge`で合流させ、`OTSDetachedFile`として
+///   シリアライズすることで、公式クライアントや他の検証ツールと互換性のある
+///   正式な`.ots`バイナリを生成する。
+/// - 検証: 保存済み`.ots`をパースし、各pending attestationのURIに対して
+///   `GET /timestamp/{hex}` で刻印状況を問い合わせる。ビットコインへの刻印が
+///   見つかれば証明ツリーに取り込み、確定として扱う。
 struct URLSessionOpenTimestampsClient: OpenTimestampsClient {
     private let session: URLSession
     private let calendars: [URL]
-
-    /// カレンダーからの応答に含まれる、Bitcoin attestationを示すタグバイト列
-    private static let bitcoinAttestationTag: [UInt8] = [0x05, 0x88, 0x96, 0x0d, 0x73, 0xd7, 0x19, 0x01]
 
     init(session: URLSession = .shared, calendars: [URL] = OpenTimestampsCalendars.servers) {
         self.session = session
@@ -58,52 +60,65 @@ struct URLSessionOpenTimestampsClient: OpenTimestampsClient {
             throw OpenTimestampsError.invalidHash
         }
 
-        let results = await withTaskGroup(of: (URL, Data?).self) { group -> [URL: Data] in
+        let responses = await withTaskGroup(of: Data?.self) { group -> [Data] in
             for calendar in calendars {
                 group.addTask {
-                    let response = try? await submitDigest(digest, to: calendar, session: session)
-                    return (calendar, response)
+                    try? await submitDigest(digest, to: calendar, session: session)
                 }
             }
-            var collected: [URL: Data] = [:]
-            for await (calendar, data) in group {
-                if let data { collected[calendar] = data }
+            var collected: [Data] = []
+            for await data in group {
+                if let data { collected.append(data) }
             }
             return collected
         }
 
-        guard !results.isEmpty else {
+        guard !responses.isEmpty else {
             throw OpenTimestampsError.allCalendarsFailed
         }
 
-        return CalendarProofBundle(responses: results).encoded()
+        let root = OTSTimestamp(msg: digest)
+        for responseData in responses {
+            var offset = 0
+            guard let subTree = try? OTSTimestamp.deserialize(from: responseData, offset: &offset, msg: digest) else {
+                continue
+            }
+            try? root.merge(subTree)
+        }
+        guard !root.attestations.isEmpty || !root.ops.isEmpty else {
+            throw OpenTimestampsError.allCalendarsFailed
+        }
+
+        return try OTSDetachedFile(timestamp: root).serialize()
     }
 
     func verify(hashHex: String, proof: Data) async throws -> TimestampVerification {
-        guard Data(hexString: hashHex) != nil else {
+        guard let digest = Data(hexString: hashHex), digest.count == 32 else {
             throw OpenTimestampsError.invalidHash
         }
-        guard let bundle = CalendarProofBundle(encoded: proof) else {
+        guard let file = try? OTSDetachedFile.deserialize(proof), file.timestamp.msg == digest else {
             throw OpenTimestampsError.malformedProof
         }
 
-        for (calendar, cachedResponse) in bundle.responses {
-            if Self.containsBitcoinAttestation(cachedResponse) {
-                return TimestampVerification(isValid: true, confirmedAt: nil)
-            }
-            if let refreshed = try? await fetchUpgrade(for: cachedResponse, from: calendar, session: session),
-               Self.containsBitcoinAttestation(refreshed) {
-                return TimestampVerification(isValid: true, confirmedAt: nil)
+        var didUpgrade = false
+        for (node, attestation) in file.timestamp.allAttestationNodes() {
+            guard case .pending(let uri) = attestation else { continue }
+            guard let calendarURL = URL(string: "https://\(uri)") ?? URL(string: uri) else { continue }
+            guard let upgradeData = try? await fetchUpgrade(digest: node.msg, from: calendarURL, session: session) else { continue }
+            var offset = 0
+            guard let upgradedTree = try? OTSTimestamp.deserialize(from: upgradeData, offset: &offset, msg: node.msg) else { continue }
+            if (try? node.merge(upgradedTree)) != nil {
+                didUpgrade = true
             }
         }
-        // 提出は成功しているが、まだブロックチェーンに刻印されていない（pending）状態。
-        return TimestampVerification(isValid: false, confirmedAt: nil)
-    }
 
-    private static func containsBitcoinAttestation(_ data: Data) -> Bool {
-        let tag = Data(bitcoinAttestationTag)
-        guard data.count >= tag.count else { return false }
-        return data.range(of: tag) != nil
+        let isConfirmed = file.timestamp.allAttestations().contains { _, attestation in
+            if case .bitcoin = attestation { return true }
+            return false
+        }
+
+        let upgradedProof: Data? = didUpgrade ? try? OTSDetachedFile(timestamp: file.timestamp).serialize() : nil
+        return TimestampVerification(isValid: isConfirmed, confirmedAt: nil, upgradedProof: upgradedProof)
     }
 
     private func submitDigest(_ digest: Data, to calendar: URL, session: URLSession) async throws -> Data {
@@ -119,51 +134,16 @@ struct URLSessionOpenTimestampsClient: OpenTimestampsClient {
         return data
     }
 
-    private func fetchUpgrade(for pendingResponse: Data, from calendar: URL, session: URLSession) async throws -> Data {
-        // pendingResponse自体にコミットメント（元のdigest）は含まれないため、
-        // ここでは同一カレンダーへの再照会は行わず、キャッシュ済みレスポンスをそのまま返す。
-        // 実運用では pending attestation 内のcalendar URIとnonceからcommitmentを再構成して
-        // `GET /timestamp/{commitment}` を呼ぶ必要がある（TODO: 本実装は次段階）。
-        pendingResponse
-    }
-}
-
-/// 複数カレンダーからの生レスポンスを1つのDataにまとめて保存・復元するための簡易コンテナ。
-private struct CalendarProofBundle {
-    let responses: [URL: Data]
-
-    init(responses: [URL: Data]) {
-        self.responses = responses
-    }
-
-    init?(encoded: Data) {
-        var offset = encoded.startIndex
-        var parsed: [URL: Data] = [:]
-        while offset < encoded.endIndex {
-            guard let urlLength = encoded.readUInt32(at: &offset),
-                  let urlData = encoded.readBytes(count: Int(urlLength), at: &offset),
-                  let urlString = String(data: urlData, encoding: .utf8),
-                  let url = URL(string: urlString),
-                  let payloadLength = encoded.readUInt32(at: &offset),
-                  let payload = encoded.readBytes(count: Int(payloadLength), at: &offset)
-            else {
-                return nil
-            }
-            parsed[url] = payload
+    private func fetchUpgrade(digest: Data, from calendar: URL, session: URLSession) async throws -> Data {
+        let hex = digest.map { String(format: "%02x", $0) }.joined()
+        let url = calendar.appendingPathComponent("timestamp").appendingPathComponent(hex)
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 15
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw OpenTimestampsError.allCalendarsFailed
         }
-        self.responses = parsed
-    }
-
-    func encoded() -> Data {
-        var out = Data()
-        for (url, payload) in responses {
-            let urlData = Data(url.absoluteString.utf8)
-            out.appendUInt32(UInt32(urlData.count))
-            out.append(urlData)
-            out.appendUInt32(UInt32(payload.count))
-            out.append(payload)
-        }
-        return out
+        return data
     }
 }
 
@@ -180,24 +160,5 @@ private extension Data {
             index += 2
         }
         self = Data(bytes)
-    }
-
-    mutating func appendUInt32(_ value: UInt32) {
-        var v = value.bigEndian
-        Swift.withUnsafeBytes(of: &v) { append(contentsOf: $0) }
-    }
-
-    func readUInt32(at offset: inout Index) -> UInt32? {
-        guard offset + 4 <= endIndex else { return nil }
-        let bytes = self[offset..<offset + 4]
-        offset += 4
-        return bytes.reduce(UInt32(0)) { ($0 << 8) | UInt32($1) }
-    }
-
-    func readBytes(count: Int, at offset: inout Index) -> Data? {
-        guard count >= 0, offset + count <= endIndex else { return nil }
-        let slice = self[offset..<offset + count]
-        offset += count
-        return Data(slice)
     }
 }

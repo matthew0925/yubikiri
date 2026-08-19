@@ -140,6 +140,9 @@ struct EntryDetailView: View {
             let result = try await anchoringService.refreshVerification(entry)
             entry.lastConfirmedCheckAt = .now
             entry.isConfirmedOnChain = result.isValid
+            if let upgradedProof = result.upgradedProof {
+                entry.otsProofData = upgradedProof
+            }
         } catch {
             verificationError = "確認に失敗しました。通信環境を確認して再度お試しください。"
         }

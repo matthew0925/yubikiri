@@ -47,6 +47,12 @@ final class PurchaseManager {
         }
     }
 
+    /// 機種変更・再インストール後などに購入履歴を復元する。
+    func restorePurchases() async throws {
+        try await AppStore.sync()
+        await refreshEntitlements()
+    }
+
     func refreshEntitlements() async {
         var unlocked = false
         for await result in Transaction.currentEntitlements {

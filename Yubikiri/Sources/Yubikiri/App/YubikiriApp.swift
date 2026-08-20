@@ -31,6 +31,9 @@ struct YubikiriApp: App {
             }
             .environment(purchaseManager)
             .environment(lockManager)
+            // ブランド配色（生成り背景＋焦茶文字）がダークモード非対応のため、
+            // システムのダーク切り替えで文字が読めなくなるのを避けライト固定にする。
+            .preferredColorScheme(.light)
         }
         .modelContainer(modelContainer)
         .onChange(of: scenePhase) { _, newPhase in

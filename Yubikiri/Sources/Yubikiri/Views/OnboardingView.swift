@@ -7,13 +7,13 @@ struct OnboardingView: View {
     private let steps: [(icon: String, title: String, body: String)] = [
         (
             "text.bubble",
-            "「言った・言わない」を、なくす",
+            "「言った・言わない」に、備える",
             "受けた条件や納品のやり取りを、その場でサッと記録。あとから見返せる形で残しておけます。"
         ),
         (
             "lock.shield",
-            "記録した瞬間から、書き換え不可に",
-            "確定した記録は自動で改ざん防止処理がかかります。難しい設定は一切不要です。"
+            "記録した瞬間から、改ざんを検知",
+            "確定した記録は自動でハッシュ化され、あとから内容が変わっていないか検証できます。難しい設定は一切不要です。"
         ),
         (
             "checkmark.seal",
@@ -66,7 +66,7 @@ struct OnboardingView: View {
                     }
                 }
 
-                Text("法的な助言は行いません。トラブルを未然に防ぐための記録ツールです。")
+                Text("法的な助言は行いません。トラブル予防・交渉のための記録ツールです。")
                     .font(.caption)
                     .foregroundStyle(BrandPalette.ink.opacity(0.5))
                     .multilineTextAlignment(.center)

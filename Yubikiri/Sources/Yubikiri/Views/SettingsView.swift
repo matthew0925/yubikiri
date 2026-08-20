@@ -32,9 +32,6 @@ struct SettingsView: View {
                             Text("ゆびきり")
                                 .font(.system(.title3, design: .rounded, weight: .bold))
                                 .foregroundStyle(BrandPalette.ink)
-                            Text("約束は、消えない。")
-                                .font(.caption)
-                                .foregroundStyle(BrandPalette.ink.opacity(0.55))
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)

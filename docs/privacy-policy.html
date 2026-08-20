@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>プライバシーポリシー｜ゆびきり</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #FDF8F0;
+    --fg: #3A2A1C;
+    --accent: #C8422D;
+    --card: #ffffffb0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1c1712; --fg: #f0e6d8; --card: #2a2018b0; }
+  }
+  body {
+    margin: 0;
+    background: linear-gradient(to bottom, var(--bg), var(--bg));
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    line-height: 1.8;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+  }
+  .updated {
+    color: var(--fg);
+    opacity: 0.6;
+    font-size: 0.9rem;
+    margin-bottom: 2.5rem;
+  }
+  h2 {
+    font-size: 1.15rem;
+    margin-top: 2.5rem;
+    border-left: 4px solid var(--accent);
+    padding-left: 10px;
+  }
+  section {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 4px 20px 20px;
+  }
+  a { color: var(--accent); }
+  ul { padding-left: 1.3em; }
+  strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>プライバシーポリシー</h1>
+  <p class="updated">ゆびきり（iOSアプリ）／最終更新日：2026年8月20日</p>
+
+  <p>「ゆびきり」（以下「本アプリ」）は、開発者（以下「当方」）が提供するiOSアプリケーションです。本ポリシーは、本アプリがどのような情報を扱うかを説明するものです。</p>
+
+  <section>
+  <h2>基本方針</h2>
+  <p>本アプリは<strong>自社サーバーを持たず</strong>、ユーザーが入力した案件名・クライアント名・記録内容・添付画像などの個人情報や業務データは、<strong>すべてお使いの端末内にのみ保存</strong>されます。当方を含む第三者がこれらのデータをサーバー等で収集・閲覧することはありません。</p>
+  </section>
+
+  <section>
+  <h2>端末内にのみ保存される情報（当方には送信されません）</h2>
+  <ul>
+    <li>案件名、クライアント名</li>
+    <li>記録の本文、金額、納期</li>
+    <li>添付したスクリーンショット等の画像</li>
+    <li>上記から計算されたSHA-256ハッシュ値</li>
+  </ul>
+  <p>これらは端末の暗号化されたストレージ（NSFileProtectionComplete）に保存され、バックアップのエクスポートを除き、ユーザー自身の操作なしに端末外へ出ることはありません。</p>
+  </section>
+
+  <section>
+  <h2>外部サービスに送信される情報</h2>
+  <ul>
+    <li><strong>OpenTimestamps</strong>（有料機能を利用した場合のみ）：記録内容から計算したSHA-256ハッシュ値（32バイトの数値）のみを、公開の無料インフラであるOpenTimestampsのカレンダーサーバーへ送信します。ハッシュ値から元の記録内容を復元することはできません。記録の本文・画像そのものが送信されることはありません。</li>
+    <li><strong>Apple（StoreKit）</strong>：アプリ内課金（買い切り）の決済処理はApple社のStoreKitを通じて行われ、支払い情報は当方には一切共有されません。</li>
+  </ul>
+  </section>
+
+  <section>
+  <h2>端末の機能へのアクセス</h2>
+  <ul>
+    <li><strong>写真ライブラリ</strong>：記録に添付する画像を選択する際にのみ使用します。当方のサーバーへのアップロードは行いません。</li>
+    <li><strong>Face ID / Touch ID / パスコード</strong>：アプリロック機能（任意設定）で、端末の生体認証・パスコード機構を利用します。認証情報自体はAppleのセキュアな仕組み内で処理され、当方が取得・保存することはありません。</li>
+  </ul>
+  </section>
+
+  <section>
+  <h2>情報の第三者提供</h2>
+  <p>当方は、ユーザーの個人情報や記録データを第三者に提供・販売することはありません。上記「OpenTimestamps」「Apple（StoreKit）」への送信は、機能を実現するために必要な最小限の情報（ハッシュ値のみ、または決済処理そのもの）に限られます。</p>
+  </section>
+
+  <section>
+  <h2>分析・広告</h2>
+  <p>本アプリは、広告表示や第三者アナリティクスSDK（行動追跡等）を組み込んでいません。</p>
+  </section>
+
+  <section>
+  <h2>データの削除</h2>
+  <p>本アプリをアンインストールすると、端末内に保存された全ての記録データは削除されます。当方のサーバーにはデータが存在しないため、削除依頼のご連絡は不要です。</p>
+  </section>
+
+  <section>
+  <h2>お子様のプライバシー</h2>
+  <p>本アプリは業務利用者（フリーランス・個人事業主）を対象としており、13歳未満のお子様の利用を想定していません。</p>
+  </section>
+
+  <section>
+  <h2>本ポリシーの変更</h2>
+  <p>本アプリの機能追加等に伴い、本ポリシーを改定することがあります。重要な変更がある場合は、アプリ内または本ページにてお知らせします。</p>
+  </section>
+
+  <section>
+  <h2>お問い合わせ</h2>
+  <p>本ポリシーに関するご質問は、以下までご連絡ください。</p>
+  <p>メール：<a href="mailto:gourcuffxd@gmail.com">gourcuffxd@gmail.com</a></p>
+  </section>
+</main>
+</body>
+</html>
